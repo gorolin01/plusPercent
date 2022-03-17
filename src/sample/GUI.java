@@ -1,9 +1,11 @@
 package sample;
 
+import javafx.scene.input.ClipboardContent;
+
 import javax.swing.*;
-import javax.swing.event.DocumentEvent;
-import javax.swing.event.DocumentListener;
 import java.awt.*;
+import java.awt.datatransfer.Clipboard;
+import java.awt.datatransfer.StringSelection;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyAdapter;
@@ -12,13 +14,14 @@ import java.awt.event.KeyEvent;
 public class GUI extends JFrame {
 
     private Font fontText = new Font("Calibri", Font.BOLD, 50);
+    private Font fontTextPercent = new Font("Calibri", Font.BOLD, 14);
     private static String text;
     private JTextField tf;
     private JFrame frame;
     private JPanel panel;
     private JTextArea ta;
-    private int PERCENT = 40;
-
+    private JTextField percentField;
+    private int PERCENT = 0;
 
     GUI(){
         // Создание каркаса
@@ -31,6 +34,17 @@ public class GUI extends JFrame {
         JLabel label = new JLabel("Введите цену:");
         tf = new JTextField(8); // принимает до 10 символов
         JButton clear = new JButton("Очистить");
+
+        //Панель задания процента надбавки
+        percentField = new JTextField();
+        percentField.setFont(fontTextPercent);
+        percentField.setPreferredSize(new Dimension(50, 20));
+        JLabel labelPercent = new JLabel();
+        labelPercent.setText("Текущий процент:");
+        JPanel percentPanel = new JPanel();
+        percentPanel.add(labelPercent);
+        percentPanel.add(percentField);
+
         ta = new JTextArea();
         tf.setFont(fontText);
         ta.setFont(fontText);
@@ -45,19 +59,48 @@ public class GUI extends JFrame {
 
         // Добавление компонентов в рамку.
         frame.getContentPane().add(BorderLayout.CENTER, panel);
-        //frame.getContentPane().add(BorderLayout.CENTER, ta);
+        frame.getContentPane().add(BorderLayout.SOUTH, percentPanel);
         frame.setVisible(true);
 
         tf.addKeyListener (new KeyAdapter() {// Добавляем слушателя клавиатуры для первого поля ввода
             public void keyReleased (KeyEvent e)
             {
-                setText(String.format("%.0f", calcPlusPercent(Integer.parseInt(getText()))));
+                if(getText() != null){
+                    try {
+                        String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
+                        setText(buf);
+
+                        //Копирование цены в буфер обмена
+                        ClipboardThread clipboardThread = new ClipboardThread();
+                        clipboardThread.start();
+                    }catch (NumberFormatException ex){
+                        System.out.println("NumberFormatException occurred");
+                        setText("");
+                    }
+                }
             }
         });
         clear.addActionListener(new ActionListener() {
             public void actionPerformed(ActionEvent e) {
                 tf.setText("");
                 setText("");
+            }
+        });
+        percentField.addKeyListener (new KeyAdapter() {// Добавляем слушателя клавиатуры для первого поля ввода
+            public void keyReleased (KeyEvent e)
+            {
+                try{
+                    PERCENT = Integer.parseInt(percentField.getText());
+                    String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
+                    setText(buf);
+
+                    //Копирование цены в буфер обмена
+                    ClipboardThread clipboardThread = new ClipboardThread();
+                    clipboardThread.start();
+                }catch (NumberFormatException ex){
+                    System.out.println("NumberFormatException occurred");
+                    setText("");
+                }
             }
         });
 
@@ -92,6 +135,17 @@ public class GUI extends JFrame {
 
         return tf.getText();
 
+    }
+
+    public class ClipboardThread extends Thread {
+        @Override
+        public void run() {
+            String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
+            Toolkit toolkit = Toolkit.getDefaultToolkit();
+            Clipboard clipboard = toolkit.getSystemClipboard();
+            StringSelection strSel = new StringSelection(buf);
+            clipboard.setContents(strSel, null);
+        }
     }
 
 }
