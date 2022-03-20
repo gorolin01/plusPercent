@@ -131,6 +131,22 @@ public class GUI extends JFrame {
 
     }
 
+    public void setTextMainField(String text){  //передача вычислений tesseract
+
+        text = text.replaceAll("\n", "");
+        System.out.println(text);
+        tf.setText(text);
+        String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
+        setText(buf);
+
+        //Копирование цены в буфер обмена
+        ClipboardThread clipboardThread = new ClipboardThread();
+        clipboardThread.start();
+
+        //update();
+
+    }
+
     public String getText() {
 
         return tf.getText();
@@ -140,6 +156,11 @@ public class GUI extends JFrame {
     public class ClipboardThread extends Thread {
         @Override
         public void run() {
+            try {
+                this.sleep(20);
+            } catch(Exception e) {
+                System.out.println("Exception: " + e);
+            }
             String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
             Toolkit toolkit = Toolkit.getDefaultToolkit();
             Clipboard clipboard = toolkit.getSystemClipboard();
