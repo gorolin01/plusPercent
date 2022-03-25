@@ -13,7 +13,7 @@ class GlobalMouseListener implements NativeMouseInputListener, NativeKeyListener
     private Integer Width = 0;
     private Integer Height = 0;
     private Boolean HotKeyStatus = false;
-    private Integer HOT_KAY = 3639;
+    private Integer HOT_KAY = 56;
     private GUI gui;
 
     public GlobalMouseListener(GUI gui) {
@@ -22,7 +22,7 @@ class GlobalMouseListener implements NativeMouseInputListener, NativeKeyListener
 
     //реализация запуска по нажатию клавиши
     public void nativeKeyPressed(NativeKeyEvent e) {
-        //System.out.println("Key Released: " + e.getKeyCode());
+        System.out.println("Key Released: " + e.getKeyCode());
         if (e.getKeyCode() == HOT_KAY) {  //Клавиша PS
             HotKeyStatus = true;
         }

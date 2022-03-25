@@ -6,10 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.datatransfer.Clipboard;
 import java.awt.datatransfer.StringSelection;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 public class GUI extends JFrame {
 
@@ -22,18 +19,41 @@ public class GUI extends JFrame {
     private JTextArea ta;
     private JTextField percentField;
     private int PERCENT = 0;
+    private JCheckBox filter;
+    private JCheckBox copyOnClipboardBox;
 
     GUI(){
         // Создание каркаса
         frame = new JFrame("Plus Percent");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setSize(400, 400);
+        frame.setSize(270, 300);
 
         // Создание панели внизу и добавление компонентов
         panel = new JPanel(); // панель не видна при выводе
         JLabel label = new JLabel("Введите цену:");
-        tf = new JTextField(8); // принимает до 10 символов
+        tf = new JTextField(6); // принимает до 6 символов
         JButton clear = new JButton("Очистить");
+
+        //простые настройки
+        //настройка окно повер других окон
+        JPanel settingsPanel = new JPanel();
+        JCheckBox alwaysOnTop = new JCheckBox("AlwaysOnTop");
+        alwaysOnTop.addItemListener(new ItemListener() {
+            public void itemStateChanged(ItemEvent e) {
+                if(alwaysOnTop.isSelected()){
+                    frame.setAlwaysOnTop(true); //окно поверх всех окон
+                }
+            }
+        });
+        settingsPanel.add(alwaysOnTop);
+        //
+        //настройка фильтрации выходных данных
+        filter = new JCheckBox("Filter");
+        settingsPanel.add(filter);
+        //
+        //копирование в буфер обмена
+        copyOnClipboardBox = new JCheckBox("CB");
+        settingsPanel.add(copyOnClipboardBox);
 
         //Панель задания процента надбавки
         percentField = new JTextField();
@@ -49,17 +69,18 @@ public class GUI extends JFrame {
         tf.setFont(fontText);
         ta.setFont(fontText);
         //ta.setEnabled(false);
-        ta.setPreferredSize(new Dimension(350, 80));
+        ta.setPreferredSize(new Dimension(250, 80));
         ta.setText(text);
+        panel.add(clear);
         panel.add(label); // Компоненты, добавленные с помощью макета Flow Layout
         panel.add(tf);
-        panel.add(clear);
         panel.add(ta);
-        tf.setPreferredSize(new Dimension(350, 80));
+        tf.setPreferredSize(new Dimension(250, 80));
 
         // Добавление компонентов в рамку.
         frame.getContentPane().add(BorderLayout.CENTER, panel);
         frame.getContentPane().add(BorderLayout.SOUTH, percentPanel);
+        frame.getContentPane().add(BorderLayout.NORTH, settingsPanel);
         frame.setVisible(true);
 
         tf.addKeyListener (new KeyAdapter() {// Добавляем слушателя клавиатуры для первого поля ввода
@@ -70,9 +91,7 @@ public class GUI extends JFrame {
                         String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
                         setText(buf);
 
-                        //Копирование цены в буфер обмена
-                        ClipboardThread clipboardThread = new ClipboardThread();
-                        clipboardThread.start();
+                        copyOnClipboard();
                     }catch (NumberFormatException ex){
                         System.out.println("NumberFormatException occurred");
                         setText("");
@@ -94,9 +113,7 @@ public class GUI extends JFrame {
                     String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
                     setText(buf);
 
-                    //Копирование цены в буфер обмена
-                    ClipboardThread clipboardThread = new ClipboardThread();
-                    clipboardThread.start();
+                    copyOnClipboard();
                 }catch (NumberFormatException ex){
                     System.out.println("NumberFormatException occurred");
                     setText("");
@@ -104,6 +121,22 @@ public class GUI extends JFrame {
             }
         });
 
+    }
+
+    //Копирование цены в буфер обмена
+    public void copyOnClipboard(){
+        if(copyOnClipboardBox.isSelected()){
+            ClipboardThread clipboardThread = new ClipboardThread();
+            clipboardThread.start();
+        }
+    }
+
+    public boolean statusFilter(){
+        if(filter.isSelected()){
+            return true;
+        }else{
+            return false;
+        }
     }
 
     private Double calcPlusPercent(int price){
@@ -139,11 +172,7 @@ public class GUI extends JFrame {
         String buf = String.format("%.0f", calcPlusPercent(Integer.parseInt(getText())));
         setText(buf);
 
-        //Копирование цены в буфер обмена
-        ClipboardThread clipboardThread = new ClipboardThread();
-        clipboardThread.start();
-
-        //update();
+        copyOnClipboard();
 
     }
 
